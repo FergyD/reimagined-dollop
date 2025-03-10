@@ -32,7 +32,7 @@ def check_urls(url_list):
     return results
 
 def main(req):
-    url_list = ["https://example.com", "https://anotherexample.com"]
+    url_list = ["https://example.com", "https://example2.com"]
     result = check_urls(url_list)
     
     return {
