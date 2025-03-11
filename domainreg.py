@@ -32,7 +32,7 @@ def get_domain_registrar(domain):
 
 def main():
     domains = [
-        "coxauto.co.uk",
+        "starlight.co.uk",
         "coxautoinc.eu",
         "dealer-bay.co.uk",
         "thisdomaindoesnotexistatall.fake",
