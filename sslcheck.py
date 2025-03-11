@@ -1,41 +1,55 @@
 import ssl
 import socket
 from datetime import datetime
-import requests
+import urllib.parse
 
 def get_ssl_expiry_date(url):
-    try:
-        # Extract the domain from the URL
-        hostname = url.split("//")[-1].split("/")[0]
+    """
+    Checks the SSL certificate expiry date of a URL.
 
-        # Establish an SSL context and get the certificate
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        datetime or str: The expiry date as a datetime object, or an error message as a string.
+    """
+    try:
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.scheme != 'https':
+            return f"Error: URL scheme is not HTTPS - {url}"
+        hostname = parsed_url.netloc
+        port = 443  # Default HTTPS port
+
         context = ssl.create_default_context()
-        with socket.create_connection((hostname, 443)) as sock:
+        with socket.create_connection((hostname, port), timeout=10) as sock: #added timeout.
             with context.wrap_socket(sock, server_hostname=hostname) as ssock:
                 cert = ssock.getpeercert()
 
-        # Extract expiration date and calculate remaining days
-        expiry_date = cert['notAfter']
-        expiry_date = datetime.strptime(expiry_date, '%b %d %H:%M:%S %Y GMT')
-        remaining_days = (expiry_date - datetime.utcnow()).days
+        expiry_timestamp = ssl.cert_time_to_seconds(cert['notAfter'])
+        expiry_date = datetime.fromtimestamp(expiry_timestamp)
+        return expiry_date
 
-        return remaining_days
+    except socket.gaierror:
+        return f"Error: Could not resolve hostname - {url}"
+    except ConnectionRefusedError:
+        return f"Error: Connection refused - {url}"
+    except ssl.SSLError as e:
+        if "self signed certificate" in str(e):
+            return f"SSL Error: Self-signed certificate - {url}"
+        return f"SSL Error: {e} - {url}"
     except Exception as e:
-        return str(e)
+        return f"An unexpected error occurred: {e} - {url}"
 
-def check_urls(url_list):
-    results = {}
-    for url in url_list:
-        remaining_days = get_ssl_expiry_date(url)
-        results[url] = remaining_days
+while True:
+    url_to_check = input("Enter the URL to check (e.g., https://www.google.com) or type 'exit' to quit: ")
 
-    return results
+    if url_to_check.lower() == 'exit':
+        break  # Exit the loop if the user enters 'exit'
 
-def main(req):
-    url_list = ["https://example.com", "https://example2.com"]
-    result = check_urls(url_list)
-    
-    return {
-        "status": 200,
-        "body": result
-    }
+    expiry_result = get_ssl_expiry_date(url_to_check)
+
+    if isinstance(expiry_result, datetime):
+        print(f"URL: {url_to_check} - SSL Expiry: {expiry_result.strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        print(f"URL: {url_to_check} - {expiry_result}")
+    print("-" * 20) #add a seperator.

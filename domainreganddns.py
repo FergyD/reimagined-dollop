@@ -58,11 +58,8 @@ def get_public_dns(domain):
 
 def main():
     domains = [
-        "google.com",
-        "example.org",
-        "invalidtldexample.xyz",
-        "thisdomaindoesnotexistatall.fake",
-        "bbc.co.uk"
+    "www.google.co.uk",
+    "www.bbc.co.uk"
     ]
 
     results = []

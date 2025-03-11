@@ -33,11 +33,9 @@ def get_domain_registrar(domain):
 def main():
     domains = [
         "starlight.co.uk",
-        "coxautoinc.eu",
+        "live.co.uk",
         "dealer-bay.co.uk",
-        "thisdomaindoesnotexistatall.fake",
-        "carsandmotor.co.uk",
-        "carvaluation.com"
+        "thisdomaindoesnotexistatall.fake"
     ]
 
     for domain in domains:
